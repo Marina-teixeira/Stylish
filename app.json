@@ -8,6 +8,11 @@
     "scheme": "stylish",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/logoipsum-255 1.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E5E5E5"
+    },
     "ios": {
       "supportsTablet": true
     },
