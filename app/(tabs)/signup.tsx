@@ -9,32 +9,80 @@ import { api } from "../../convex/_generated/api";
 
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const router = useRouter();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [touched, setTouched] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    // Mensagens de erro
+    const hasError = touched && password && confirmPassword && password !== confirmPassword;
+
+    const emailError = submitted && !email;
+    const passwordEmptyError = submitted && !password;
+    const confirmPasswordEmptyError = submitted && !confirmPassword;
+
+    // Validação de email
+    const isValidEmail = (email: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+    const emailInvalidError = submitted && email && !isValidEmail(email);
+
+    // Validação de senha
+    const isValidPassword = (password: string) => {
+        const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        return regex.test(password);
+    };
+    const hasMinLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const isPasswordValid = hasMinLength && hasUppercase && hasNumber;
+    const passwordInvalidError = submitted && password && !isPasswordValid;
+    const Requirement = ({ valid, text }) => (
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
+            <Ionicons
+                name={valid ? "checkmark-circle" : "ellipse-outline"}
+                size={14}
+                color={valid ? "#4CAF50" : "#999"}
+                style={{ marginRight: 5 }}
+            />
+            <Text style={{ color: valid ? "#4CAF50" : "#999", fontSize: 12 }}>
+                {text}
+            </Text>
+        </View>
+    );
 
     const createUser = useMutation(api.users.createUser);
 
     const handleSignUp = async () => {
         setError("");
+        setSubmitted(true);
 
         if (!email || !password || !confirmPassword) {
-            alert("Por favor, preencha todos os campos.");
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("As senhas não coincidem.");
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            return;
+        }
+
+        if (!isValidPassword(password)) {
             return;
         }
 
         try {
             await createUser({
                 email,
-                passwordHash: password, 
+                passwordHash: password,
             });
 
             alert("Usuário criado com sucesso");
@@ -52,8 +100,12 @@ export default function Signup() {
                 Crie sua conta!
             </Text>
 
+            {submitted && (!email || !password || !confirmPassword) && (
+                <Text style={styles.errorText}>*Por favor, preencha todos os campos.</Text>
+            )}
+
             {/* input Email */}
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, (emailError || emailInvalidError) && styles.inputError]}>
                 <Ionicons name="person-outline" size={20} color="#777" />
                 <TextInput
                     placeholder="Digite o seu Email"
@@ -63,13 +115,22 @@ export default function Signup() {
                 />
             </View>
 
+            {emailInvalidError && (
+                <Text style={styles.errorText}>*Email inválido.</Text>
+            )}
+
             {/* input Senha */}
-            <View style={[styles.inputContainer, error ? styles.inputError : null]}>
+            <View style={[styles.inputContainer, (passwordEmptyError || hasError || passwordInvalidError) && styles.inputError]}>
                 <Ionicons name="lock-closed-outline" size={20} color="#777" />
                 <TextInput
                     placeholder="Senha"
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => {
+                        setPassword(text);
+                    }}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    textContentType="oneTimeCode"
                     secureTextEntry={!showPassword}
                     style={styles.input}
                 />
@@ -77,27 +138,48 @@ export default function Signup() {
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                     <Ionicons name="eye-outline" size={20} color="#777" />
                 </TouchableOpacity>
+
             </View>
 
+            {password.length > 0 && (
+                <View style={{ marginTop: 2 }}>
+                    <Requirement valid={hasMinLength} text="Mínimo de 8 caracteres;" />
+                    <Requirement valid={hasUppercase} text="Pelo menos uma letra maiúscula;" />
+                    <Requirement valid={hasNumber} text="Pelo menos um número;" />
+                </View>
+            )}
+
+            {passwordInvalidError && (
+                <Text style={styles.errorText}>
+                    *Sua senha não atende aos requisitos.
+                </Text>
+            )}
+
             {/* confirmar senha */}
-            <View style={[styles.inputContainer, error ? styles.inputError : null]}>
+            <View style={[styles.inputContainer, (confirmPasswordEmptyError || hasError) && styles.inputError]}>
                 <Ionicons name="lock-closed-outline" size={20} color="#777" />
                 <TextInput
                     placeholder="Confirmar a senha"
-                    secureTextEntry={!showPassword}
+                    secureTextEntry={!showConfirmPassword}
                     value={confirmPassword}
-                    onChangeText={setConfirmPassword}
+                    onChangeText={(text) => {
+                        setConfirmPassword(text);
+                        setTouched(true);
+                    }}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    textContentType="oneTimeCode"
                     style={styles.input}
                 />
 
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                     <Ionicons name="eye-outline" size={20} color="#777" />
                 </TouchableOpacity>
             </View>
 
-            {error ? (
-                <Text style={styles.errorText}>*{error}</Text>
-            ) : null}
+            {hasError && (
+                <Text style={styles.errorText}>*As senhas não coincidem.</Text>
+            )}
 
             {/* botão */}
             <TouchableOpacity style={styles.button} onPress={handleSignUp}>

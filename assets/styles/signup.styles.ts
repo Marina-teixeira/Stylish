@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
   errorText: {
     color: "#FF3B5C",
     fontSize: 12,
-    marginTop: 4,
+    marginTop: -2,
     marginBottom: 10,
   },
 
