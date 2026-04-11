@@ -1,11 +1,13 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import { useState } from "react";
-import { styles } from "../../assets/styles/login.styles";
+import { useRouter } from "expo-router";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { useState } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { styles } from "../../assets/styles/login.styles";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    const router = useRouter();
 
     return (
         <View style={styles.container}>
@@ -18,7 +20,7 @@ export default function Login() {
             {/* input Email */}
             <View style={styles.inputContainer}>
                 <Ionicons name="person-outline" size={20} color="#777" />
-                <TextInput 
+                <TextInput
                     placeholder="Digite o seu Email"
                     style={styles.input}
                 />
@@ -27,7 +29,7 @@ export default function Login() {
             {/* input Senha */}
             <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color="#777" />
-                <TextInput 
+                <TextInput
                     placeholder="Senha"
                     secureTextEntry={!showPassword}
                     style={styles.input}
@@ -59,9 +61,15 @@ export default function Login() {
             </View>
 
             <Text style={styles.signup}>
-                Crie uma conta <Text style={styles.signupLink}>Sign up</Text>
+                Crie uma conta{" "}
+                <Text
+                    style={styles.signupLink}
+                    onPress={() => router.push("/signup")} 
+                >
+                    Sign Up
+                </Text>
             </Text>
         </View>
-        
-    )
+
+    );
 }
