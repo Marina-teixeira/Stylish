@@ -29,6 +29,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
+  
+  errorText: {
+    color: "#FF3B5C",
+    fontSize: 12,
+    marginTop: -2,
+    marginBottom: 10,
+  },
 
   forgot: {
     textAlign: "right",

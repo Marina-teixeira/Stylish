@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useState, useEffect } from "react";
+import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/signup.styles";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -18,6 +18,8 @@ export default function Signup() {
     const [error, setError] = useState("");
     const [touched, setTouched] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    const [emailExistsError, setEmailExistsError] = useState(false);
 
     // Mensagens de erro
     const hasError = touched && password && confirmPassword && password !== confirmPassword;
@@ -43,7 +45,7 @@ export default function Signup() {
     const hasNumber = /\d/.test(password);
     const isPasswordValid = hasMinLength && hasUppercase && hasNumber;
     const passwordInvalidError = submitted && password && !isPasswordValid;
-    const Requirement = ({ valid, text }) => (
+    const Requirement = ({ valid, text }: { valid: boolean; text: string }) => (
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
             <Ionicons
                 name={valid ? "checkmark-circle" : "ellipse-outline"}
@@ -86,126 +88,163 @@ export default function Signup() {
             });
 
             alert("Usuário criado com sucesso");
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
+
+            const message = error?.message || error?.data?.message || "";
+
+            if (message.includes("EMAIL_ALREADY_EXISTS")) {
+                setEmailExistsError(true);
+                return;
+            }
+
             alert("Erro ao cadastrar");
         }
-    }
+    };
 
     return (
-        <View style={styles.container}>
-            <StatusBar style="dark" />
 
-            <Text style={styles.title}>
-                Crie sua conta!
-            </Text>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+            >
 
-            {submitted && (!email || !password || !confirmPassword) && (
-                <Text style={styles.errorText}>*Por favor, preencha todos os campos.</Text>
-            )}
+                <View style={styles.container}>
+                    <StatusBar style="dark" />
 
-            {/* input Email */}
-            <View style={[styles.inputContainer, (emailError || emailInvalidError) && styles.inputError]}>
-                <Ionicons name="person-outline" size={20} color="#777" />
-                <TextInput
-                    placeholder="Digite o seu Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    style={styles.input}
-                />
-            </View>
+                    <Text style={styles.title}>
+                        Crie sua conta!
+                    </Text>
 
-            {emailInvalidError && (
-                <Text style={styles.errorText}>*Email inválido.</Text>
-            )}
+                    {submitted && (!email || !password || !confirmPassword) && (
+                        <Text style={styles.errorText}>*Por favor, preencha todos os campos.</Text>
+                    )}
 
-            {/* input Senha */}
-            <View style={[styles.inputContainer, (passwordEmptyError || hasError || passwordInvalidError) && styles.inputError]}>
-                <Ionicons name="lock-closed-outline" size={20} color="#777" />
-                <TextInput
-                    placeholder="Senha"
-                    value={password}
-                    onChangeText={(text) => {
-                        setPassword(text);
-                    }}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    textContentType="oneTimeCode"
-                    secureTextEntry={!showPassword}
-                    style={styles.input}
-                />
+                    {/* input Email */}
+                    <View style={[styles.inputContainer, (emailError || emailInvalidError || emailExistsError) && styles.inputError]}>
+                        <Ionicons name="person-outline" size={20} color="#777" />
+                        <TextInput
+                            placeholder="Digite o seu Email"
+                            value={email}
+                            onChangeText={(text) => {
+                                setEmail(text);
+                                setEmailExistsError(false);
+                            }}
+                            style={styles.input}
+                        />
+                    </View>
 
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    <Ionicons name="eye-outline" size={20} color="#777" />
-                </TouchableOpacity>
+                    {emailInvalidError && (
+                        <Text style={styles.errorText}>*Email inválido.</Text>
+                    )}
 
-            </View>
+                    {emailExistsError && (
+                        <Text style={styles.errorText}>*Email já cadastrado.</Text>
+                    )}
 
-            {password.length > 0 && (
-                <View style={{ marginTop: 2 }}>
-                    <Requirement valid={hasMinLength} text="Mínimo de 8 caracteres;" />
-                    <Requirement valid={hasUppercase} text="Pelo menos uma letra maiúscula;" />
-                    <Requirement valid={hasNumber} text="Pelo menos um número;" />
+                    {/* input Senha */}
+                    <View style={[styles.inputContainer, (passwordEmptyError || hasError || passwordInvalidError) && styles.inputError]}>
+                        <Ionicons name="lock-closed-outline" size={20} color="#777" />
+                        <TextInput
+                            placeholder="Senha"
+                            value={password}
+                            onChangeText={(text) => {
+                                setPassword(text);
+                            }}
+                            autoCorrect={false}
+                            autoCapitalize="none"
+                            textContentType="oneTimeCode"
+                            secureTextEntry={!showPassword}
+                            style={styles.input}
+                        />
+
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                            <Ionicons
+                                name={showPassword ? "eye-outline" : "eye-off-outline"}
+                                size={20}
+                                color="#777"
+                            />
+                        </TouchableOpacity>
+
+                    </View>
+
+                    {password.length > 0 && (
+                        <View style={{ marginTop: 2 }}>
+                            <Requirement valid={hasMinLength} text="Mínimo de 8 caracteres;" />
+                            <Requirement valid={hasUppercase} text="Pelo menos uma letra maiúscula;" />
+                            <Requirement valid={hasNumber} text="Pelo menos um número;" />
+                        </View>
+                    )}
+
+                    {passwordInvalidError && (
+                        <Text style={styles.errorText}>
+                            *Sua senha não atende aos requisitos.
+                        </Text>
+                    )}
+
+                    {/* confirmar senha */}
+                    <View style={[styles.inputContainer, (confirmPasswordEmptyError || hasError) && styles.inputError]}>
+                        <Ionicons name="lock-closed-outline" size={20} color="#777" />
+                        <TextInput
+                            placeholder="Confirmar a senha"
+                            secureTextEntry={!showConfirmPassword}
+                            value={confirmPassword}
+                            onChangeText={(text) => {
+                                setConfirmPassword(text);
+                                setTouched(true);
+                            }}
+                            autoCorrect={false}
+                            autoCapitalize="none"
+                            textContentType="oneTimeCode"
+                            style={styles.input}
+                        />
+
+                        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            <Ionicons
+                                name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                                size={20}
+                                color="#777"
+                            />
+                        </TouchableOpacity>
+                    </View>
+
+                    {hasError && (
+                        <Text style={styles.errorText}>*As senhas não coincidem.</Text>
+                    )}
+
+                    {/* botão */}
+                    <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+                        <Text style={styles.buttonText}>Criar Conta</Text>
+                    </TouchableOpacity>
+
+                    {/* social */}
+                    <View style={styles.socialContainer}>
+                        <TouchableOpacity style={styles.socialButton}>
+                            <FontAwesome name="google" size={20} />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.socialButton}>
+                            <FontAwesome name="facebook" size={20} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.login}>
+                        Já tem uma conta?{" "}
+                        <Text
+                            style={styles.loginLink}
+                            onPress={() => router.push("/login")}
+                        >
+                            Sign In
+                        </Text>
+                    </Text>
                 </View>
-            )}
+            </ScrollView>
+        </KeyboardAvoidingView>
 
-            {passwordInvalidError && (
-                <Text style={styles.errorText}>
-                    *Sua senha não atende aos requisitos.
-                </Text>
-            )}
-
-            {/* confirmar senha */}
-            <View style={[styles.inputContainer, (confirmPasswordEmptyError || hasError) && styles.inputError]}>
-                <Ionicons name="lock-closed-outline" size={20} color="#777" />
-                <TextInput
-                    placeholder="Confirmar a senha"
-                    secureTextEntry={!showConfirmPassword}
-                    value={confirmPassword}
-                    onChangeText={(text) => {
-                        setConfirmPassword(text);
-                        setTouched(true);
-                    }}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    textContentType="oneTimeCode"
-                    style={styles.input}
-                />
-
-                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    <Ionicons name="eye-outline" size={20} color="#777" />
-                </TouchableOpacity>
-            </View>
-
-            {hasError && (
-                <Text style={styles.errorText}>*As senhas não coincidem.</Text>
-            )}
-
-            {/* botão */}
-            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-                <Text style={styles.buttonText}>Criar Conta</Text>
-            </TouchableOpacity>
-
-            {/* social */}
-            <View style={styles.socialContainer}>
-                <TouchableOpacity style={styles.socialButton}>
-                    <FontAwesome name="google" size={20} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.socialButton}>
-                    <FontAwesome name="facebook" size={20} />
-                </TouchableOpacity>
-            </View>
-
-            <Text style={styles.login}>
-                Já tem uma conta?{" "}
-                <Text
-                    style={styles.loginLink}
-                    onPress={() => router.push("/login")}
-                >
-                    Sign In
-                </Text>
-            </Text>
-        </View>
     )
 }
