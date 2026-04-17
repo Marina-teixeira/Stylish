@@ -1,13 +1,32 @@
-import { useRouter } from "expo-router";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/senha.styles";
-import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { supabase } from "@/lib/supabase";
+import { isValidEmail } from "@/utils/validators";
+
 
 export default function Senha() {
+    const [email, setEmail] = useState("");
+
+    const handleResetPassword = async () => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: "exp://localhost:19000/reset-password",
+        });
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            alert("Digite um email válido");
+            return;
+        }
+
+        alert("Email de recuperação enviado!");
+    };
 
     return (
         <KeyboardAvoidingView
@@ -29,9 +48,11 @@ export default function Senha() {
 
                     <View style={styles.inputContainer}>
                         <Ionicons name="mail" size={20} color="#888" />
-                        <TextInput 
+                        <TextInput
                             placeholder="Digite o seu email"
                             style={styles.input}
+                            value={email}
+                            onChangeText={setEmail}
                         />
                     </View>
 
@@ -40,7 +61,7 @@ export default function Senha() {
                     </Text>
 
                     {/* botão */}
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
                         <Text style={styles.buttonText}>
                             Enviar
                         </Text>

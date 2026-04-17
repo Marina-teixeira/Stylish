@@ -4,8 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/login.styles";
-import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { supabase } from "../../lib/supabase";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +15,7 @@ export default function Login() {
     const [error, setError] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
-    const loginUser = useMutation(api.users.loginUser);
+    // const loginUser = useMutation(api.users.loginUser);
 
     // Função de login
     const handleLogin = async () => {
@@ -28,21 +27,27 @@ export default function Login() {
         }
 
         try {
-            const user = await loginUser({ email, passwordHash: password });
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-            alert("Login realizado com sucesso!");
-        } catch (err: any) {
-            const message =
-                err?.message ||
-                err?.data?.message ||
-                "";
+            if (error) {
+                console.log(error);
 
-            if (message.includes("INVALID_CREDENTIALS")) {
-                setError("Email ou senha inválidos.");
+                if (error.message.toLowerCase().includes("invalid")) {
+                    setError("Email ou senha inválidos.");
+                    return;
+                }
+
+                setError(error.message);
                 return;
             }
 
-            setError("Erro ao fazer login.")
+            alert("Login realizado com sucesso!");
+        } catch (err) {
+            console.log(err);
+            setError("Erro ao fazer login.");
         }
     }
 

@@ -1,11 +1,10 @@
 import { useRouter } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/signup.styles";
-import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { supabase } from "../../lib/supabase";
 
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
@@ -59,11 +58,10 @@ export default function Signup() {
         </View>
     );
 
-    const createUser = useMutation(api.users.createUser);
-
     const handleSignUp = async () => {
         setError("");
         setSubmitted(true);
+        setEmailExistsError(false);
 
         if (!email || !password || !confirmPassword) {
             return;
@@ -82,23 +80,28 @@ export default function Signup() {
         }
 
         try {
-            await createUser({
+            const { data, error } = await supabase.auth.signUp({
                 email,
-                passwordHash: password,
+                password,
             });
 
-            alert("Usuário criado com sucesso");
-        } catch (error: any) {
-            console.log(error);
+            if (error) {
+                console.log(error);
 
-            const message = error?.message || error?.data?.message || "";
+                // trata email já existente
+                if (error.message.toLowerCase().includes("Email já registrado")) {
+                    setEmailExistsError(true);
+                    return;
+                }
 
-            if (message.includes("EMAIL_ALREADY_EXISTS")) {
-                setEmailExistsError(true);
+                alert(error.message);
                 return;
             }
 
-            alert("Erro ao cadastrar");
+            alert("Usuário criado com sucesso");
+        } catch (error) {
+            console.log(error);
+            alert("Ocorreu um erro ao criar a conta. Tente novamente.");
         }
     };
 
