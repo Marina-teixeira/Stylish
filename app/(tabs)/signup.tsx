@@ -63,37 +63,31 @@ export default function Signup() {
         setSubmitted(true);
         setEmailExistsError(false);
 
-        if (!email || !password || !confirmPassword) {
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            return;
-        }
-
-        if (!isValidPassword(password)) {
-            return;
-        }
+        if (!email || !password || !confirmPassword) return;
+        if (password !== confirmPassword) return;
+        if (!isValidEmail(email)) return;
+        if (!isValidPassword(password)) return;
 
         try {
+            // 🔥 1. verifica se email já existe
+            const { data: existingUser } = await supabase
+                .from("profiles")
+                .select("email")
+                .eq("email", email)
+                .single();
+
+            if (existingUser) {
+                setEmailExistsError(true);
+                return;
+            }
+
+            // 🔥 2. cria usuário
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
             });
 
             if (error) {
-                console.log(error);
-
-                // trata email já existente
-                if (error.message.toLowerCase().includes("Email já registrado")) {
-                    setEmailExistsError(true);
-                    return;
-                }
-
                 alert(error.message);
                 return;
             }
@@ -101,7 +95,7 @@ export default function Signup() {
             alert("Usuário criado com sucesso");
         } catch (error) {
             console.log(error);
-            alert("Ocorreu um erro ao criar a conta. Tente novamente.");
+            alert("Erro ao cadastrar");
         }
     };
 
