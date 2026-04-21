@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/signup.styles";
 import { supabase } from "../../lib/supabase";
+import * as WebBrowser from "expo-web-browser";
+import { makeRedirectUri } from "expo-auth-session";
 
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
@@ -96,6 +98,33 @@ export default function Signup() {
         } catch (error) {
             console.log(error);
             alert("Erro ao cadastrar");
+        }
+    };
+
+    // Criar conta com Google
+    const redirectUri = makeRedirectUri({
+        scheme: "stylish",
+    });
+
+    const handleGoogleSignUp = async () => {
+        console.log("Clicou no google");
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: "exp://localhost:19000/--/",
+                skipBrowserRedirect: true,
+            },
+        });
+
+        if (error) {
+            console.log(error);
+            alert("Erro ao logar com Google");
+            return;
+        }
+
+        if (data?.url) {
+            await WebBrowser.openBrowserAsync(data.url);
         }
     };
 
@@ -221,7 +250,7 @@ export default function Signup() {
 
                     {/* social */}
                     <View style={styles.socialContainer}>
-                        <TouchableOpacity style={styles.socialButton}>
+                        <TouchableOpacity style={styles.socialButton} onPress={handleGoogleSignUp}>
                             <FontAwesome name="google" size={20} />
                         </TouchableOpacity>
 
