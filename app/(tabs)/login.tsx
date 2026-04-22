@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { styles } from "../../assets/styles/login.styles";
 import { supabase } from "../../lib/supabase";
+import * as WebBrowser from "expo-web-browser";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -14,8 +15,6 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [submitted, setSubmitted] = useState(false);
-
-    // const loginUser = useMutation(api.users.loginUser);
 
     // Função de login
     const handleLogin = async () => {
@@ -50,6 +49,29 @@ export default function Login() {
             setError("Erro ao fazer login.");
         }
     }
+
+    // Logar com Google
+    const handleGoogleAuth = async () => {
+        console.log("GOOGLE AUTH");
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: "exp://localhost:19000/--/",
+                skipBrowserRedirect: true,
+            },
+        });
+
+        if (error) {
+            console.log(error);
+            alert("Erro ao autenticar com Google");
+            return;
+        }
+
+        if (data?.url) {
+            await WebBrowser.openBrowserAsync(data.url);
+        }
+    };
 
     return (
 
@@ -114,7 +136,7 @@ export default function Login() {
                         </TouchableOpacity>
                     </View>
 
-                    <Text 
+                    <Text
                         style={styles.forgot}
                         onPress={() => router.push("/senha")}
                     >
@@ -130,7 +152,7 @@ export default function Login() {
 
                     {/* social */}
                     <View style={styles.socialContainer}>
-                        <TouchableOpacity style={styles.socialButton}>
+                        <TouchableOpacity style={styles.socialButton} onPress={handleGoogleAuth}>
                             <FontAwesome name="google" size={20} />
                         </TouchableOpacity>
 

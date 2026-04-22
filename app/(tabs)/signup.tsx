@@ -8,6 +8,8 @@ import { supabase } from "../../lib/supabase";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
 
+WebBrowser.maybeCompleteAuthSession(); // Completa a sessão de autenticação se necessário
+
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -104,6 +106,7 @@ export default function Signup() {
     // Criar conta com Google
     const redirectUri = makeRedirectUri({
         scheme: "stylish",
+        path: "auth/callback",
     });
 
     const handleGoogleSignUp = async () => {
@@ -112,7 +115,7 @@ export default function Signup() {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: "exp://localhost:19000/--/",
+                redirectTo: redirectUri,
                 skipBrowserRedirect: true,
             },
         });
@@ -124,7 +127,7 @@ export default function Signup() {
         }
 
         if (data?.url) {
-            await WebBrowser.openBrowserAsync(data.url);
+            await WebBrowser.openAuthSessionAsync(data.url, redirectUri);
         }
     };
 
