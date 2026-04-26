@@ -43,7 +43,8 @@ export default function Login() {
                 return;
             }
 
-            alert("Login realizado com sucesso!");
+            // Redirecionar para a página de onboarding após login bem-sucedido
+            router.push("/home");
         } catch (err) {
             console.log(err);
             setError("Erro ao fazer login.");

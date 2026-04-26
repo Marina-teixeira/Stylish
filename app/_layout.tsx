@@ -11,7 +11,7 @@ export default function RootLayout() {
 
   useEffect(() => {
 
-    // 🔥 escuta retorno do Google (deep link)
+    // escuta retorno do Google (deep link)
     const subscription = Linking.addEventListener("url", async (event) => {
       console.log("URL recebida:", event.url);
 
@@ -25,7 +25,7 @@ export default function RootLayout() {
       console.log("Login finalizado!");
     });
 
-    // 🔥 escuta estado de login
+    // escuta estado de login
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("EVENTO:", event);
@@ -44,6 +44,8 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack screenOptions={{ headerShown: false }} />
+    <Stack 
+      screenOptions={{ headerShown: false }} 
+    />
   );
 }
