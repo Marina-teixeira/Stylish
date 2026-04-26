@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import SearchBar from "@/components/SearchBar";
 import Categories from "@/components/Categories";
 import Banner from "@/components/Banner";
+import ProductCard from "@/components/ProductCard";
 
 export default function Home() {
   return (
@@ -11,6 +12,10 @@ export default function Home() {
       <SearchBar />
       <Categories />
       <Banner />
+
+    {/* No futuro colocar aba de descontos do dia aqui */}
+
+      <ProductCard />
 
     </ScrollView>
   );
