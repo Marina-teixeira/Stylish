@@ -4,6 +4,7 @@ import SearchBar from "@/components/SearchBar";
 import Categories from "@/components/Categories";
 import Banner from "@/components/Banner";
 import ProductCard from "@/components/ProductCard";
+import EspecialOferrs from "@/components/EspecialOferrs";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
     {/* No futuro colocar aba de descontos do dia aqui */}
 
       <ProductCard />
+      <EspecialOferrs />
 
     </ScrollView>
   );
