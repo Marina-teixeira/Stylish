@@ -5,6 +5,8 @@ import Categories from "@/components/Categories";
 import Banner from "@/components/Banner";
 import ProductCard from "@/components/ProductCard";
 import EspecialOferrs from "@/components/EspecialOferrs";
+import PopularProducts from "@/components/PopularProducts";
+import EventSales from "@/components/EventSales";
 
 export default function Home() {
   return (
@@ -18,6 +20,9 @@ export default function Home() {
 
       <ProductCard />
       <EspecialOferrs />
+      <EventSales />
+
+      <PopularProducts />
 
     </ScrollView>
   );

@@ -5,10 +5,10 @@ export default function EspecialOferrs() {
         <View style={{
             padding: 20,
             backgroundColor: "#fff",
-            marginTop: 10,
+            marginTop: 15,
             borderRadius: 20,
             margin: 16,
-            marginBottom: 50, // mudar depois
+            marginBottom: 10, 
         }}>
 
             <View style={{ position: "relative", flexDirection: "row" }}>
@@ -42,8 +42,6 @@ export default function EspecialOferrs() {
                         Garantimos que você encontre a oferta que precisa pelos melhores preços.
                     </Text>
                 </View>
-
-
 
             </View>
 
