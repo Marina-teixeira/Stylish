@@ -8,7 +8,7 @@ export default function PopularProducts() {
             padding: 12,
             borderRadius: 20,
             margin: 16,
-            marginBottom: 100, //mudar depois
+            marginBottom: 20, //mudar depois
         }}>
 
             <View style={{ flex: 1 }}>

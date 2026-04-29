@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { use, useRef } from "react";
+import { useRef } from "react";
 
 export default function ProductCard() {
     // Botão de scroll horizontal
